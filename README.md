@@ -13,7 +13,6 @@ Proyek ini adalah implementasi game Family 100 berbasis web, dengan soal-soal se
 1. **Clone repository** (jika belum):
    ```
    git clone https://github.com/rynonymous02/Fiqih100-Minigame-Family100-FamilyFeud-Mecanism.git
-   cd family-100
    ```
 
 2. **Install dependencies**:
