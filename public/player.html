@@ -173,6 +173,32 @@
         #status.success {
             background-color: #008800;
         }
+
+        .logout-container {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .logout-btn {
+            padding: 12px 24px;
+            background-color: #aa0000;
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .logout-btn:hover {
+            background-color: #cc0000;
+        }
     </style>
 </head>
 <body>
@@ -202,11 +228,16 @@
         <div id="status"></div>
     </div>
 
+    <div class="logout-container">
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </div>
+
     <script>
         let ws;
         let currentTeam = "1";
         let playerName = "";
         let isConnected = false;
+        let isManualLogout = false;
 
         const playerForm = document.getElementById('player-form');
         const buzzerBtn = document.getElementById('buzzer');
@@ -214,6 +245,7 @@
         const joinBtn = document.getElementById('join-btn');
         const playerNameInput = document.getElementById('player-name');
         const teamButtons = document.querySelectorAll('.team-btn');
+        const logoutBtn = document.getElementById('logout-btn');
 
         // Load saved player data
         const savedPlayer = localStorage.getItem('playerData');
@@ -245,6 +277,7 @@
                 connectToGame(false);
             }
         });
+        logoutBtn.addEventListener('click', handleLogout);
 
         function connectToGame(isReconnect) {
             if (!isReconnect) {
@@ -283,6 +316,7 @@
                     playerForm.style.display = 'none';
                     buzzerBtn.style.display = 'block';
                     statusDiv.textContent = `Terhubung ke game! (Tim ${currentTeam})`;
+                    logoutBtn.style.display = 'block';
                 };
 
                 ws.onmessage = (event) => {
@@ -311,7 +345,15 @@
                     console.log('Disconnected from server');
                     isConnected = false;
                     disableBuzzer();
-                    statusDiv.textContent = 'Terputus dari server. Refresh halaman untuk menghubungkan kembali.';
+                    logoutBtn.style.display = 'none';
+                    if (isManualLogout) {
+                        isManualLogout = false;
+                        statusDiv.textContent = 'Anda telah keluar. Silakan masuk lagi.';
+                        playerForm.style.display = 'block';
+                        buzzerBtn.style.display = 'none';
+                    } else {
+                        statusDiv.textContent = 'Terputus dari server. Refresh halaman untuk menghubungkan kembali.';
+                    }
                 };
 
                 ws.onerror = (error) => {
@@ -368,6 +410,42 @@
                 statusDiv.style.color = '#ffff00';
             }
         });
+
+        function handleLogout() {
+            // Mark manual logout to alter onclose behavior
+            isManualLogout = true;
+
+            // Clear saved player data
+            localStorage.removeItem('playerData');
+
+            // Reset UI immediately
+            playerForm.style.display = 'block';
+            buzzerBtn.style.display = 'none';
+            disableBuzzer();
+            logoutBtn.style.display = 'none';
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = 'Keluar dari game...';
+            statusDiv.style.color = '#ffffff';
+
+            // Reset inputs and selection
+            playerNameInput.value = '';
+            currentTeam = '1';
+            teamButtons.forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.team === currentTeam);
+            });
+            buzzerBtn.className = `buzzer team${currentTeam}`;
+
+            // Close websocket if open
+            try {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.close();
+                } else {
+                    isConnected = false;
+                }
+            } catch (_) {
+                isConnected = false;
+            }
+        }
     </script>
 </body>
 </html> 
