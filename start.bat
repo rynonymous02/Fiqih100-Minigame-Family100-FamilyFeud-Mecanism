@@ -19,14 +19,8 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /r /c:"IPv4 Address"') d
 :found
 set ip=%ip: =%
 
-echo Local Access:
-echo http://localhost:3000/family    - Panel Admin
-echo http://localhost:3000/host      - Panel Host  
-echo http://localhost:3000/player    - Tombol Peserta
-echo.
-
 echo Network Access:
-echo http://%ip%:3000/family         - Panel Admin
+echo http://%ip%:3000/family         - Panel Display
 echo http://%ip%:3000/host           - Panel Host
 echo http://%ip%:3000/player         - Tombol Peserta
 echo.
@@ -37,3 +31,4 @@ echo ========================================
 echo.
 
 npm start
+
